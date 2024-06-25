@@ -29,6 +29,7 @@ Environment="PATH=/home/dit/kirtanSoni_master_thesis/CrowdAnalysis/.venv/bin"
 
 [Install]
 WantedBy=multi-user.target
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # How to run and use the software:
