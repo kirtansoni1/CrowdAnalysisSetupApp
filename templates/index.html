@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowd Analysis Sytem Setup</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
+</head>
+
+<body class="bg-welcome">
+    <div class="container">
+        <br><br><br><br>
+        <h1>Welcome to Crowd Management Device Setup</h1>
+        <br><br>
+        <h1>Nvidia Xavier NX Connection</h1>
+        <br>
+        <p id="usb-status">USB Connection: Checking...</p>
+        <p id="network-status"></p>
+        <p id="ip-addr"></p>
+        <button id="copy-ip-button" type="button" style="display: none;" onclick="copyIpToClipboard()">Copy IP to
+            Clipboard</button>
+        <p id="server-status">Crowd Analysis Server status: Checking...</p>
+        <br>
+        <div id="wifi-section" style="display: none;">
+            <form id="wifi-form">
+                <p id="wifi-info">Enter WiFi credentials to connect:</p>
+                <label for="ssid">WiFi SSID:</label>
+                <input type="text" id="ssid" name="ssid" required><br>
+                <label for="password">WiFi Password:</label>
+                <input type="password" id="password" name="password" required><br>
+                <button type="button" onclick="connectToWifi()" style="height: 50px; width: 200px;">Connect to
+                    WiFi</button>
+            </form>
+        </div>
+
+        <div id="server-buttons">
+            <button id="start-server-button" type="button" onclick="startServer()"
+                style="height: 50px; width: 200px; display: none">Start Crowd Analysis Server</button>
+            <button id="stop-server-button" type="button" onclick="stopServer()"
+                style="height: 50px; width: 200px; display: none">Stop Crowd Analysis Server</button>
+        </div>
+
+        <button type="button" onclick="exitApp()" style="height: 50px; width: 200px;">Exit Setup</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            setInterval(checkStatus, 5000); // Update every 5 seconds
+            checkStatus(); // Initial check
+        });
+
+        function checkStatus() {
+            fetch('/check_status')
+                .then(response => response.json())
+                .then(data => {
+                    const usbStatusElement = document.getElementById('usb-status');
+                    const networkStatusElement = document.getElementById('network-status');
+                    const wifiSection = document.getElementById('wifi-section');
+                    const copyIpButton = document.getElementById('copy-ip-button');
+
+                    if (data.wifi_connected) {
+                        wifiSection.style.display = 'block';
+                        networkStatusElement.innerText = `Device is Connected to WiFi: ${data.wifi_name}`;
+                        getIp();
+                        copyIpButton.style.display = 'block';
+                    } else {
+                        if (data.usb_connected) {
+                            wifiSection.style.display = 'block';
+                            networkStatusElement.innerText = 'Device is Not Connected to WiFi, Enter credentials to connect to a WiFi.';
+                            copyIpButton.style.display = 'none';
+                        }
+                        else {
+                            wifiSection.style.display = 'none';
+                            networkStatusElement.innerText = 'Device is Not reachable, please connect to the host with USB cable.';
+                            copyIpButton.style.display = 'none';
+                        }
+                    }
+
+                    if (data.usb_connected) {
+                        usbStatusElement.innerText = 'USB Connection: Connected';
+                    } else {
+                        usbStatusElement.innerText = 'USB Connection: Not Connected';
+                    }
+
+                    checkServerStatus();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function checkServerStatus() {
+            fetch('/server_status')
+                .then(response => response.json())
+                .then(data => {
+                    const serverStatusElement = document.getElementById('server-status');
+                    const startServerButton = document.getElementById('start-server-button');
+                    const stopServerButton = document.getElementById('stop-server-button');
+
+                    serverStatusElement.innerText = `Crowd Analysis Server status: ${data.status}`;
+
+                    if (data.status === 'running') {
+                        startServerButton.style.display = 'none';
+                        stopServerButton.style.display = 'block';
+                    } else {
+                        startServerButton.style.display = 'block';
+                        stopServerButton.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const serverStatusElement = document.getElementById('server-status');
+                    serverStatusElement.innerText = 'Crowd Analysis Server status: Error';
+                });
+        }
+
+        function connectToWifi() {
+            const ssid = document.getElementById('ssid').value;
+            const password = document.getElementById('password').value;
+            fetch('/connect_wifi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ssid: ssid, password: password }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.message === 'Connected to WiFi successfully.') {
+                        document.getElementById('wifi-form').reset();
+                        checkStatus();
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function startServer() {
+            fetch('/start_server', {
+                method: 'POST',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    checkServerStatus();
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function stopServer() {
+            fetch('/stop_server', {
+                method: 'POST',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    checkServerStatus();
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function exitApp() {
+            fetch('/shutdown', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.close();
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                });
+        }
+
+        function getIp() {
+            const IpAddrElement = document.getElementById('ip-addr');
+            fetch('/get_ip', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    IpAddrElement.innerText = "IP: " + data.ip_address + ":5000";
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function copyIpToClipboard() {
+            const IpAddrElement = document.getElementById('ip-addr').innerText;
+            const ip = IpAddrElement.replace("IP: ", "");
+            navigator.clipboard.writeText(ip).then(() => {
+                alert('IP address copied to clipboard');
+            }).catch(err => {
+                alert('Failed to copy IP address: ' + err);
+            });
+        }
+    </script>
+</body>
+
+</html>

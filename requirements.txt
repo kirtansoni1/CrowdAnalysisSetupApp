@@ -1,0 +1,12 @@
+pywebview==3.7.1
+pywebview[GTK]==3.7.1
+pygobject==3.40.0
+PyQtWebEngine==5.15.6
+qtpy==2.4.1
+PySide2==5.15.2.1
+PySide6==6.2.4
+PyQt5
+Flask
+paramiko
+
+# gKuechwmbdPQQPja

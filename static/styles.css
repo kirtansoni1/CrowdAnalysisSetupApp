@@ -1,0 +1,25 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: "JetBrains Mono", monospace;
+}
+
+.bg-welcome {
+    background-image: url('./images/Welcome_page.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.container {
+    width: auto;
+    margin: 0 auto;
+    text-align: center;
+}
+
+label, input, button {
+    display: block;
+    margin: 10px auto;
+}
