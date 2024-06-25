@@ -37,13 +37,47 @@ If you want to setup the code base and run it over an IDE like VScode, follow th
 IMPORTANT: This software only works with Linux OS
 
 ## How to setup the python enviornmnet:
-- If Linux:
-    - python3 -m venv .venv
-    - source .venv/bin/activate
-    - pip install --upgrade pip setuptools
-    - pip install -r requirements.txt
-    - Run the software in IDE:
-        - python3 ./app.py
+- Create a virtual enviornment
+    - If Linux
+        - python3.10 -m venv .venv
+    - If Windows
+        - python -m venv .venv
+
+- Activate the virtual enviornment
+    - Windows:
+        - .\.venv\Scripts\activate
+    - Linux:
+        - source .venv/bin/activate
+
+- Make sure the correct virtual enviornment is active
+    - If Linux:
+        - which python
+    - If Windows:
+        - (.venv) should appear in the terminal
+
+- Install pip:
+    - Windows:
+        - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+        - python get-pip.py
+        - Then you can delete the get-pip.py file
+    - Linux:
+        - python3 -m ensurepip --upgrade
+
+- Upgrade pip:
+    - Linux:
+        - pip install --upgrade pip setuptools
+    - Windows:
+        - python -m pip install --upgrade pip setuptools
+
+- Install the requirements.txt file:
+    - If Linux:
+        - pip install -r requirements.txt
+    - If Windows:
+        - pip install pywebview flask paramiko
+
+- Run Software:
+    - python app.py
+
 
 ## How to open the software from binary:
 - If Linux:
