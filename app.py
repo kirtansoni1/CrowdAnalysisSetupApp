@@ -27,8 +27,8 @@ flask_port = 5100
 def check_usb_connection():
     try:
         if platform.system() == "Windows":
-            result = subprocess.run(['wmic', 'path', 'Win32_USBControllerDevice',
-                                    'get', 'Dependent'], stdout=subprocess.PIPE)
+            result = subprocess.run(['powershell', '-Command', 'Get-WmiObject Win32_USBControllerDevice | Format-Table -Property Dependent'],
+                                    stdout=subprocess.PIPE)
             output = result.stdout.decode()
             return NVIDIA_VID in output
         else:
@@ -123,19 +123,33 @@ def execute_ssh_command(command):
 
 def check_and_kill_port(port):
     try:
-        result = subprocess.run(['lsof', '-i', f':{port}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = result.stdout.decode().strip()
-        if output:
-            lines = output.split('\n')
-            for line in lines[1:]:
-                if line:
-                    parts = line.split()
-                    pid = int(parts[1])
-                    os.kill(pid, signal.SIGKILL)
+        if platform.system() == "Windows":
+            result = subprocess.run(['powershell', '-Command', f'Get-Process -Id (Get-NetTCPConnection -LocalPort {port}).OwningProcess'],
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = result.stdout.decode().strip()
+            if output:
+                lines = output.split('\n')
+                for line in lines[3:]:
+                    if line:
+                        parts = line.split()
+                        pid = int(parts[-1])
+                        subprocess.run(['taskkill', '/PID', str(pid), '/F'])
             print(f"Port {port} is now free.")
             time.sleep(5)
         else:
-            print(f"Port {port} is not occupied.")
+            result = subprocess.run(['lsof', '-i', f':{port}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = result.stdout.decode().strip()
+            if output:
+                lines = output.split('\n')
+                for line in lines[1:]:
+                    if line:
+                        parts = line.split()
+                        pid = int(parts[1])
+                        os.kill(pid, signal.SIGKILL)
+                print(f"Port {port} is now free.")
+                time.sleep(5)
+            else:
+                print(f"Port {port} is not occupied.")
     except Exception as e:
         print(f"Error checking/killing port {port}: {e}")
 
