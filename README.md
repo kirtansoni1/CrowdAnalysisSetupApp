@@ -81,12 +81,14 @@ IMPORTANT: This software only works with Linux OS
 
 ## How to open the software from binary:
 - If Linux:
-    - Double click the ./dist/CrowdAnalysis
+    - Double click the ./dist/Linux/CrowdAnalysis
     - OR
     - Open a Terminal inside the CrowdAnalysisSetupApp root directory
     - Enter the following cmd:
-        - ./dist/CrowdAnalysis
+        - ./dist/Linux/CrowdAnalysis
     - The software will open
+- If Windows:
+    - Double click the ./dist/Windows/CrowdAnalysis
 
 ## How to use this software:
 - After opening the software, it will look for the device via USB or WiFi
